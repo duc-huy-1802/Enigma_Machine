@@ -58,6 +58,7 @@ const machine = {
 
 const elements = {};
 let lampTimer = null;
+let operationMode = "encrypt";
 
 function toIndex(letter) {
   return ALPHABET.indexOf(letter);
@@ -501,6 +502,27 @@ function renderMachine() {
   });
 }
 
+function renderOperationMode() {
+  const decrypting = operationMode === "decrypt";
+  document.querySelectorAll("[data-operation-mode]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.operationMode === operationMode);
+  });
+  elements.inputLabel.textContent = decrypting ? "Ciphertext" : "Plaintext";
+  elements.outputLabel.textContent = decrypting ? "Plaintext" : "Ciphertext";
+  elements.operationAction.textContent = decrypting
+    ? "Decipher message"
+    : "Encipher message";
+  elements.modeExplanation.textContent = decrypting
+    ? "Enter ciphertext with the original settings to recover the plaintext."
+    : "Enter plaintext; the machine will produce ciphertext.";
+  elements.plainText.placeholder = decrypting
+    ? "TYPE OR PASTE CIPHERTEXT…"
+    : "TYPE A MESSAGE…";
+  elements.cipherText.placeholder = decrypting
+    ? "PLAINTEXT APPEARS HERE…"
+    : "CIPHERTEXT APPEARS HERE…";
+}
+
 function renderTrace() {
   const trace = machine.lastTrace;
   if (!trace) {
@@ -612,6 +634,7 @@ function rebuildFromConfiguration({ keepPositions = false } = {}) {
 }
 
 function restoreDefaults() {
+  operationMode = "encrypt";
   Object.assign(machine, {
     rotorOrder: [...DEFAULTS.rotorOrder],
     rings: [...DEFAULTS.rings],
@@ -633,6 +656,7 @@ function restoreDefaults() {
   createReflectorEditor();
   updateRotorSelects();
   renderMachine();
+  renderOperationMode();
   renderTrace();
 }
 
@@ -653,6 +677,16 @@ function bindEvents() {
     button.addEventListener("click", () => {
       machine.reflector = button.dataset.reflector;
       rebuildFromConfiguration({ keepPositions: true });
+    });
+  });
+
+  document.querySelectorAll("[data-operation-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      operationMode = button.dataset.operationMode;
+      machine.history = "";
+      machine.lastTrace = null;
+      resetPositions(true);
+      renderOperationMode();
     });
   });
 
@@ -822,6 +856,10 @@ function init() {
     "keyboard",
     "plainText",
     "cipherText",
+    "inputLabel",
+    "outputLabel",
+    "operationAction",
+    "modeExplanation",
     "inputCount",
     "encryptMessage",
     "copyOutput",
@@ -863,6 +901,7 @@ function init() {
   updateRotorSelects();
   bindEvents();
   renderMachine();
+  renderOperationMode();
 }
 
 document.addEventListener("DOMContentLoaded", init);

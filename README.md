@@ -21,7 +21,8 @@ Users can install Rotors I-V or define an independent custom wiring permutation
 and turnover notch for each rotor position. Reflectors B and C are included,
 along with a validated 13-pair custom reflector editor. The interface also
 includes an on-screen keyboard and lampboard, message encryption, and a
-component-by-component trace of the latest keypress.
+clearly labeled reciprocal decryption mode, plus a component-by-component trace
+of the latest keypress.
 
 To publish it with GitHub Pages:
 

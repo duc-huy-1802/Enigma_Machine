@@ -788,6 +788,50 @@ select {
   background: #ded8c9;
 }
 
+.operation-mode {
+  grid-column: 1 / -1;
+  padding-bottom: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid rgba(23, 25, 22, 0.14);
+}
+
+.mode-switch {
+  display: flex;
+}
+
+.mode-switch button {
+  min-width: 88px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid #89887f;
+  color: #4e514a;
+  background: #f2eee4;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.mode-switch button + button {
+  border-left: 0;
+}
+
+.mode-switch button.active {
+  color: white;
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.operation-mode p {
+  margin: 0;
+  color: #555950;
+  font: italic 12px Georgia, serif;
+  text-align: right;
+}
+
 .message-label {
   display: flex;
   justify-content: space-between;
@@ -1169,6 +1213,16 @@ footer {
 
   .message-panel {
     grid-template-columns: 1fr;
+  }
+
+  .operation-mode {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .operation-mode p {
+    text-align: left;
   }
 
   .encrypt-button {

@@ -157,9 +157,18 @@
           </div>
 
           <div class="message-panel">
+            <div class="operation-mode">
+              <div class="mode-switch" role="group" aria-label="Message operation">
+                <button class="active" data-operation-mode="encrypt" type="button">Encrypt</button>
+                <button data-operation-mode="decrypt" type="button">Decrypt</button>
+              </div>
+              <p id="modeExplanation">
+                Enter plaintext; the machine will produce ciphertext.
+              </p>
+            </div>
             <div class="message-column">
               <div class="message-label">
-                <label for="plainText">Input</label>
+                <label for="plainText" id="inputLabel">Plaintext</label>
                 <span id="inputCount">0 letters</span>
               </div>
               <textarea
@@ -171,12 +180,12 @@
               ></textarea>
             </div>
             <button class="encrypt-button" id="encryptMessage" type="button">
-              <span>Encipher message</span>
+              <span id="operationAction">Encipher message</span>
               <span aria-hidden="true">→</span>
             </button>
             <div class="message-column">
               <div class="message-label">
-                <label for="cipherText">Output</label>
+                <label for="cipherText" id="outputLabel">Ciphertext</label>
                 <button id="copyOutput" type="button">Copy</button>
               </div>
               <textarea
