@@ -513,8 +513,8 @@ function renderOperationMode() {
     ? "Decipher message"
     : "Encipher message";
   elements.modeExplanation.textContent = decrypting
-    ? "Enter ciphertext with the original settings; spaces pass through unchanged."
-    : "Enter plaintext; spaces remain unchanged and do not move the rotors.";
+    ? "Only A–Z is decrypted; every other character passes through unchanged."
+    : "Only A–Z enters the machine; every other character passes through unchanged.";
   elements.plainText.placeholder = decrypting
     ? "TYPE OR PASTE CIPHERTEXT…"
     : "TYPE A MESSAGE…";
@@ -661,14 +661,21 @@ function restoreDefaults() {
 }
 
 function cleanLetters(value) {
-  return value.toUpperCase().replace(/[^A-Z]/g, "");
+  return [...value]
+    .map((character) => character.toUpperCase())
+    .filter((character) => character.length === 1 && ALPHABET.includes(character))
+    .join("");
 }
 
-function prepareMessage(value) {
-  return value
-    .toUpperCase()
-    .replace(/\s/g, " ")
-    .replace(/[^A-Z ]/g, "");
+function transformMessage(value) {
+  let result = "";
+  for (const character of value) {
+    const normalized = character.toUpperCase();
+    result += normalized.length === 1 && ALPHABET.includes(normalized)
+      ? pressKey(normalized, false)
+      : character;
+  }
+  return result;
 }
 
 function bindEvents() {
@@ -793,25 +800,18 @@ function bindEvents() {
   });
 
   elements.plainText.addEventListener("input", () => {
-    const message = prepareMessage(elements.plainText.value);
-    const letterCount = cleanLetters(message).length;
-    const spaceCount = [...message].filter((character) => character === " ").length;
-    elements.inputCount.textContent =
-      `${letterCount} letter${letterCount === 1 ? "" : "s"}` +
-      (spaceCount ? ` · ${spaceCount} space${spaceCount === 1 ? "" : "s"}` : "");
+    const count = cleanLetters(elements.plainText.value).length;
+    elements.inputCount.textContent = `${count} letter${count === 1 ? "" : "s"}`;
   });
 
   elements.encryptMessage.addEventListener("click", () => {
-    const message = prepareMessage(elements.plainText.value);
+    const message = elements.plainText.value;
     if (!cleanLetters(message)) {
       elements.plainText.focus();
       return;
     }
     resetPositions(true);
-    let result = "";
-    for (const character of message) {
-      result += character === " " ? " " : pressKey(character, false);
-    }
+    const result = transformMessage(message);
     machine.history = result;
     elements.cipherText.value = result;
     if (machine.lastTrace) illuminate(machine.lastTrace.input, machine.lastTrace.output);

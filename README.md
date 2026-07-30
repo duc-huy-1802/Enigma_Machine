@@ -22,7 +22,8 @@ and turnover notch for each rotor position. Reflectors B and C are included,
 along with a validated 13-pair custom reflector editor. The interface also
 includes an on-screen keyboard and lampboard, message encryption, and a
 clearly labeled reciprocal decryption mode, plus a component-by-component trace
-of the latest keypress. Spaces pass through message encryption and decryption
+of the latest keypress. Only ASCII letters A-Z enter the machine; spaces,
+punctuation, numbers, accents, emoji, and other characters pass through
 unchanged without advancing the rotors.
 
 To publish it with GitHub Pages:
