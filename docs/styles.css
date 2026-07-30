@@ -782,20 +782,31 @@ select {
 .message-panel {
   padding: 26px 34px;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-areas:
+    "mode mode mode"
+    "input action output";
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: end;
   gap: 18px;
   background: #ded8c9;
 }
 
 .operation-mode {
-  grid-column: 1 / -1;
+  grid-area: mode;
   padding-bottom: 17px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
   border-bottom: 1px solid rgba(23, 25, 22, 0.14);
+}
+
+.input-column {
+  grid-area: input;
+}
+
+.output-column {
+  grid-area: output;
 }
 
 .mode-switch {
@@ -875,6 +886,7 @@ textarea::placeholder {
 }
 
 .encrypt-button {
+  grid-area: action;
   height: 44px;
   min-width: 156px;
   padding: 0 18px;
@@ -1185,6 +1197,33 @@ footer {
   letter-spacing: 0.16em;
 }
 
+@media (max-width: 1080px) {
+  .message-panel {
+    grid-template-areas:
+      "mode"
+      "input"
+      "action"
+      "output";
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .operation-mode {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .operation-mode p {
+    text-align: left;
+  }
+
+  .encrypt-button {
+    width: 100%;
+    justify-self: stretch;
+  }
+}
+
 @media (max-width: 900px) {
   .intro {
     grid-template-columns: 1fr;
@@ -1212,21 +1251,7 @@ footer {
   }
 
   .message-panel {
-    grid-template-columns: 1fr;
-  }
-
-  .operation-mode {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .operation-mode p {
-    text-align: left;
-  }
-
-  .encrypt-button {
-    justify-self: start;
+    padding: 22px;
   }
 
   .letter-board {

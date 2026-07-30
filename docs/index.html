@@ -9,8 +9,8 @@
     />
     <meta name="theme-color" content="#171916" />
     <title>Enigma I — Interactive Cipher Machine</title>
-    <link rel="stylesheet" href="styles.css" />
-    <script src="app.js" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20260729-1" />
+    <script src="app.js?v=20260729-1" defer></script>
   </head>
   <body>
     <header class="site-header">
@@ -166,7 +166,7 @@
                 Enter plaintext; the machine will produce ciphertext.
               </p>
             </div>
-            <div class="message-column">
+            <div class="message-column input-column">
               <div class="message-label">
                 <label for="plainText" id="inputLabel">Plaintext</label>
                 <span id="inputCount">0 letters</span>
@@ -183,7 +183,7 @@
               <span id="operationAction">Encipher message</span>
               <span aria-hidden="true">→</span>
             </button>
-            <div class="message-column">
+            <div class="message-column output-column">
               <div class="message-label">
                 <label for="cipherText" id="outputLabel">Ciphertext</label>
                 <button id="copyOutput" type="button">Copy</button>
