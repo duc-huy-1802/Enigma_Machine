@@ -513,8 +513,8 @@ function renderOperationMode() {
     ? "Decipher message"
     : "Encipher message";
   elements.modeExplanation.textContent = decrypting
-    ? "Enter ciphertext with the original settings to recover the plaintext."
-    : "Enter plaintext; the machine will produce ciphertext.";
+    ? "Enter ciphertext with the original settings; spaces pass through unchanged."
+    : "Enter plaintext; spaces remain unchanged and do not move the rotors.";
   elements.plainText.placeholder = decrypting
     ? "TYPE OR PASTE CIPHERTEXT…"
     : "TYPE A MESSAGE…";
@@ -664,6 +664,13 @@ function cleanLetters(value) {
   return value.toUpperCase().replace(/[^A-Z]/g, "");
 }
 
+function prepareMessage(value) {
+  return value
+    .toUpperCase()
+    .replace(/\s/g, " ")
+    .replace(/[^A-Z ]/g, "");
+}
+
 function bindEvents() {
   [elements.leftRotor, elements.middleRotor, elements.rightRotor].forEach((select, index) => {
     select.addEventListener("change", () => {
@@ -786,19 +793,25 @@ function bindEvents() {
   });
 
   elements.plainText.addEventListener("input", () => {
-    const count = cleanLetters(elements.plainText.value).length;
-    elements.inputCount.textContent = `${count} letter${count === 1 ? "" : "s"}`;
+    const message = prepareMessage(elements.plainText.value);
+    const letterCount = cleanLetters(message).length;
+    const spaceCount = [...message].filter((character) => character === " ").length;
+    elements.inputCount.textContent =
+      `${letterCount} letter${letterCount === 1 ? "" : "s"}` +
+      (spaceCount ? ` · ${spaceCount} space${spaceCount === 1 ? "" : "s"}` : "");
   });
 
   elements.encryptMessage.addEventListener("click", () => {
-    const message = cleanLetters(elements.plainText.value);
-    if (!message) {
+    const message = prepareMessage(elements.plainText.value);
+    if (!cleanLetters(message)) {
       elements.plainText.focus();
       return;
     }
     resetPositions(true);
     let result = "";
-    for (const letter of message) result += pressKey(letter, false);
+    for (const character of message) {
+      result += character === " " ? " " : pressKey(character, false);
+    }
     machine.history = result;
     elements.cipherText.value = result;
     if (machine.lastTrace) illuminate(machine.lastTrace.input, machine.lastTrace.output);
