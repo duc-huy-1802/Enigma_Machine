@@ -13,6 +13,22 @@ object:
 
 The included Enigma I catalog contains Rotors I-V and Reflectors B and C.
 
+## Interactive web interface
+
+The dependency-free simulator in [`docs/`](docs/) mirrors the Python engine's
+rotor catalog, ring settings, positions, reflector choices, and stepping modes.
+It includes an on-screen keyboard and lampboard, message encryption, and a
+component-by-component trace of the latest keypress.
+
+To publish it with GitHub Pages:
+
+1. Open the repository's **Settings → Pages**.
+2. Under **Build and deployment**, choose **Deploy from a branch**.
+3. Select your default branch and the **`/docs`** folder, then save.
+
+No build command or third-party runtime is needed. You can also open
+`docs/index.html` directly in a browser for local use.
+
 ## Run
 
 No third-party runtime dependencies are required.

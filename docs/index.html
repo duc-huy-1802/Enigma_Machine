@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="An interactive, historically accurate three-rotor Enigma I simulator."
+    />
+    <meta name="theme-color" content="#171916" />
+    <title>Enigma I — Interactive Cipher Machine</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="Enigma I home">
+        <span class="brand-mark">E</span>
+        <span>
+          <strong>ENIGMA I</strong>
+          <small>CIPHER MACHINE / 1930</small>
+        </span>
+      </a>
+      <div class="header-note">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Machine ready</span>
+        <button class="about-button" id="aboutButton" type="button">How it works</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Interactive historical simulator</p>
+          <h1 id="page-title">Secrets move<br /><em>one letter at a time.</em></h1>
+        </div>
+        <p class="intro-copy">
+          Configure three rotors, set their rings and starting positions, then
+          type on the machine. Because Enigma is reciprocal, the same settings
+          decipher what they encipher.
+        </p>
+      </section>
+
+      <section class="configuration" aria-labelledby="configuration-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">01 / Machine setup</p>
+            <h2 id="configuration-title">Configure the cipher</h2>
+          </div>
+          <button class="text-button" id="restoreDefaults" type="button">Restore defaults</button>
+        </div>
+
+        <div class="config-grid">
+          <fieldset class="rotor-config">
+            <legend>Rotor order <span>Left → Right</span></legend>
+            <div class="rotor-selects">
+              <label>
+                <span>I · Left</span>
+                <select id="leftRotor" aria-label="Left rotor"></select>
+              </label>
+              <span class="direction-arrow" aria-hidden="true">→</span>
+              <label>
+                <span>II · Middle</span>
+                <select id="middleRotor" aria-label="Middle rotor"></select>
+              </label>
+              <span class="direction-arrow" aria-hidden="true">→</span>
+              <label>
+                <span>III · Right</span>
+                <select id="rightRotor" aria-label="Right rotor"></select>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="compact-config">
+            <legend>Reflector</legend>
+            <div class="segmented" role="group" aria-label="Reflector">
+              <button class="segment active" data-reflector="B" type="button">UKW B</button>
+              <button class="segment" data-reflector="C" type="button">UKW C</button>
+            </div>
+          </fieldset>
+
+          <fieldset class="compact-config">
+            <legend>Stepping mode</legend>
+            <label class="toggle-row">
+              <input id="turnoverToggle" type="checkbox" checked />
+              <span class="toggle" aria-hidden="true"></span>
+              <span>
+                <strong>Historical turnover</strong>
+                <small>Includes double-step</small>
+              </span>
+            </label>
+          </fieldset>
+        </div>
+      </section>
+
+      <section class="machine" aria-labelledby="machine-title">
+        <div class="machine-topbar">
+          <div>
+            <p class="eyebrow">02 / Operate</p>
+            <h2 id="machine-title">The machine</h2>
+          </div>
+          <div class="machine-actions">
+            <button class="text-button" id="resetMachine" type="button">Reset positions</button>
+            <button class="text-button danger" id="clearMachine" type="button">Clear session</button>
+          </div>
+        </div>
+
+        <div class="machine-deck">
+          <div class="rotor-bank" aria-label="Rotor windows and settings">
+            <div class="bank-label">
+              <span>Walzenlage</span>
+              <small>Rotor windows</small>
+            </div>
+            <div class="rotor-windows" id="rotorWindows"></div>
+            <div class="bank-legend">
+              <span>Ring setting</span>
+              <span class="signal-direction">Signal enters here ←</span>
+            </div>
+          </div>
+
+          <div class="message-panel">
+            <div class="message-column">
+              <div class="message-label">
+                <label for="plainText">Input</label>
+                <span id="inputCount">0 letters</span>
+              </div>
+              <textarea
+                id="plainText"
+                rows="3"
+                maxlength="500"
+                placeholder="TYPE A MESSAGE…"
+                spellcheck="false"
+              ></textarea>
+            </div>
+            <button class="encrypt-button" id="encryptMessage" type="button">
+              <span>Encipher message</span>
+              <span aria-hidden="true">→</span>
+            </button>
+            <div class="message-column">
+              <div class="message-label">
+                <label for="cipherText">Output</label>
+                <button id="copyOutput" type="button">Copy</button>
+              </div>
+              <textarea
+                id="cipherText"
+                rows="3"
+                placeholder="CIPHERTEXT APPEARS HERE…"
+                readonly
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="lampboard">
+            <div class="deck-title">
+              <span>Lampboard</span>
+              <small>Click a key or use your keyboard</small>
+            </div>
+            <div class="letter-board" id="lampboard" aria-label="Enigma lampboard"></div>
+          </div>
+
+          <div class="keyboard">
+            <div class="deck-title">
+              <span>Keyboard</span>
+              <small>Press any letter</small>
+            </div>
+            <div class="letter-board keyboard-board" id="keyboard" aria-label="Enigma keyboard"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="trace-section" aria-labelledby="trace-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">03 / Signal path</p>
+            <h2 id="trace-title">Inside the last keypress</h2>
+          </div>
+          <p class="trace-summary" id="traceSummary">Press a key to follow the current.</p>
+        </div>
+        <div class="trace-card" id="traceCard">
+          <div class="empty-trace">
+            <span class="empty-trace-icon">↯</span>
+            <p>The electrical journey will appear here.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="facts" aria-label="Enigma facts">
+        <article>
+          <span class="fact-number">158,962,555,217,826,360,000</span>
+          <p>possible settings on a military Enigma with plugboard.</p>
+        </article>
+        <article>
+          <span class="fact-number">No letter</span>
+          <p>can ever encipher to itself—a useful clue for cryptanalysts.</p>
+        </article>
+        <article>
+          <span class="fact-number">Reciprocal</span>
+          <p>operation means identical settings encrypt and decrypt.</p>
+        </article>
+      </section>
+    </main>
+
+    <dialog id="aboutDialog">
+      <button class="dialog-close" id="closeAbout" type="button" aria-label="Close">×</button>
+      <p class="eyebrow">A short primer</p>
+      <h2>How Enigma transforms a letter</h2>
+      <ol>
+        <li>The right rotor steps before every keypress.</li>
+        <li>Current travels right-to-left through all three rotors.</li>
+        <li>The reflector sends it back through the inverse wirings.</li>
+        <li>A different lamp illuminates, and the circuit opens on release.</li>
+      </ol>
+      <p>
+        When a rotor reaches its notch, it turns its neighbor. The middle rotor
+        can move on two consecutive presses—the famous double-step.
+      </p>
+    </dialog>
+
+    <footer>
+      <span>ENIGMA I / EDUCATIONAL SIMULATOR</span>
+      <span>Rotors I–V · Reflectors B &amp; C · No plugboard</span>
+    </footer>
+  </body>
+</html>
