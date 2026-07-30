@@ -1,6 +1,6 @@
 :root {
   --ink: #171916;
-  --muted: #71746c;
+  --muted: #5f625b;
   --paper: #f1eee5;
   --paper-deep: #e4dfd2;
   --cream: #fbf8ee;
@@ -338,6 +338,295 @@ select {
   font-size: 9px;
 }
 
+.reflector-lab {
+  margin-top: 16px;
+  padding: 22px;
+  border: 1px solid rgba(23, 25, 22, 0.24);
+  border-radius: 3px;
+  background: #fffdf7;
+}
+
+.reflector-lab-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.reflector-lab-heading .eyebrow {
+  margin-bottom: 7px;
+}
+
+.reflector-lab h3 {
+  margin: 0;
+  font: 26px Georgia, serif;
+  letter-spacing: -0.025em;
+}
+
+.reflector-lab-copy {
+  max-width: 680px;
+  margin: 12px 0 20px;
+  color: #4e514a;
+  font: 13px/1.55 Georgia, serif;
+}
+
+.reflector-pairs {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 7px;
+}
+
+.reflector-pair {
+  display: block;
+}
+
+.reflector-pair > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #555950;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.reflector-pair input {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0 4px;
+  border: 1px solid #8e8d84;
+  border-radius: 2px;
+  color: #292b27;
+  background: #fffefa;
+  font: 600 14px "Courier New", monospace;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.reflector-pair input[aria-invalid="true"] {
+  border-color: #a85a48;
+  color: #873426;
+  background: #fff8f5;
+}
+
+.reflector-pair input:read-only {
+  cursor: default;
+  color: #474a43;
+  border-color: #aaa89f;
+  background: #f0ece2;
+}
+
+.reflector-error {
+  min-height: 18px;
+  margin: 11px 0 0;
+  color: #5a5e56;
+  font-size: 9px;
+}
+
+.reflector-error.error {
+  color: #873426;
+  font-weight: 600;
+}
+
+.wiring-lab {
+  margin-top: 16px;
+  border: 1px solid rgba(23, 25, 22, 0.24);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.wiring-lab summary {
+  min-height: 68px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.wiring-lab summary::-webkit-details-marker {
+  display: none;
+}
+
+.wiring-lab summary strong,
+.wiring-lab summary small {
+  display: block;
+}
+
+.wiring-lab summary strong {
+  font: 18px Georgia, serif;
+}
+
+.wiring-lab summary small {
+  margin-top: 4px;
+  color: #555950;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.summary-action {
+  color: var(--green);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.wiring-lab[open] .summary-action span {
+  display: inline-block;
+  transform: rotate(180deg);
+}
+
+.wiring-intro {
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  border-top: 1px solid var(--line);
+}
+
+.wiring-intro p {
+  max-width: 620px;
+  margin: 0;
+  color: #4e514a;
+  font: 13px/1.55 Georgia, serif;
+}
+
+.wiring-validity {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid rgba(29, 74, 57, 0.25);
+  border-radius: 99px;
+  color: var(--green);
+  background: rgba(29, 74, 57, 0.05);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wiring-validity.invalid {
+  color: #8b3f30;
+  border-color: rgba(139, 63, 48, 0.3);
+  background: rgba(139, 63, 48, 0.06);
+}
+
+.wiring-grid {
+  padding: 0 20px 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.wiring-card {
+  padding: 17px;
+  border: 1px solid rgba(23, 25, 22, 0.23);
+  border-radius: 2px;
+  background: #fffdf7;
+}
+
+.wiring-card.inactive {
+  border-color: rgba(23, 25, 22, 0.16);
+  background: #f7f3e9;
+}
+
+.wiring-card-header {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wiring-card-header strong,
+.wiring-card-header small {
+  display: block;
+}
+
+.wiring-card-header strong {
+  font: 16px Georgia, serif;
+}
+
+.wiring-card-header small {
+  margin-top: 4px;
+  color: #555a51;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.custom-badge {
+  align-self: flex-start;
+  padding: 4px 7px;
+  border-radius: 99px;
+  color: #50544c;
+  background: #ded9cc;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wiring-card:not(.inactive) .custom-badge {
+  color: white;
+  background: var(--green);
+}
+
+.wiring-field {
+  display: block;
+}
+
+.wiring-field + .wiring-field {
+  margin-top: 12px;
+}
+
+.wiring-field > span {
+  display: block;
+  margin-bottom: 6px;
+  color: #53574f;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.wiring-field input {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #8e8d84;
+  border-radius: 2px;
+  color: #292b27;
+  background: #fffefa;
+  font: 12px "Courier New", monospace;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.wiring-field input[aria-invalid="true"] {
+  border-color: #a85a48;
+  background: #fff8f5;
+}
+
+.wiring-help {
+  min-height: 28px;
+  margin: 9px 0 0;
+  color: #5a5e56;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.wiring-help.error {
+  color: #873426;
+  font-weight: 600;
+}
+
 .machine {
   margin-bottom: 60px;
 }
@@ -557,6 +846,12 @@ textarea::placeholder {
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
+}
+
+.encrypt-button:disabled,
+.keyboard-board.disabled .letter {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .lampboard,
@@ -860,6 +1155,14 @@ footer {
     grid-template-columns: 1fr 1fr;
   }
 
+  .wiring-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reflector-pairs {
+    grid-template-columns: repeat(7, 1fr);
+  }
+
   .rotor-config {
     grid-column: 1 / -1;
   }
@@ -949,6 +1252,21 @@ footer {
 
   .rotor-config {
     grid-column: auto;
+  }
+
+  .wiring-intro {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .reflector-lab-heading {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .reflector-pairs {
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .rotor-selects {

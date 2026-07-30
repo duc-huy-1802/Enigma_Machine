@@ -11,6 +11,9 @@ const ROTORS = {
   V: { wiring: "VZBRGITYUPSDNHLXAWMJQOFECK", notch: "Z" },
 };
 
+const CUSTOM_ROTOR_IDS = ["CUSTOM_LEFT", "CUSTOM_MIDDLE", "CUSTOM_RIGHT"];
+const POSITION_NAMES = ["Left", "Middle", "Right"];
+
 const REFLECTORS = {
   B: "YRUHQSLDPXNGOKMIEBFZCWVJAT",
   C: "FVPJIAOYEDRZXWGCTKUQSBNMHL",
@@ -22,6 +25,18 @@ const DEFAULTS = {
   positions: [0, 0, 0],
   reflector: "B",
   turnover: true,
+  customRotors: [
+    { wiring: ALPHABET, notch: "Q", valid: true, error: "" },
+    { wiring: ALPHABET, notch: "E", valid: true, error: "" },
+    { wiring: ALPHABET, notch: "V", valid: true, error: "" },
+  ],
+  customReflector: {
+    pairs: pairsFromWiring(REFLECTORS.B),
+    wiring: REFLECTORS.B,
+    valid: true,
+    error: "",
+    invalidIndexes: [],
+  },
 };
 
 const machine = {
@@ -31,6 +46,12 @@ const machine = {
   initialPositions: [...DEFAULTS.positions],
   reflector: DEFAULTS.reflector,
   turnover: DEFAULTS.turnover,
+  customRotors: DEFAULTS.customRotors.map((rotor) => ({ ...rotor })),
+  customReflector: {
+    ...DEFAULTS.customReflector,
+    pairs: [...DEFAULTS.customReflector.pairs],
+    invalidIndexes: [],
+  },
   history: "",
   lastTrace: null,
 };
@@ -46,8 +67,65 @@ function toLetter(index) {
   return ALPHABET[(index + 26) % 26];
 }
 
+function pairsFromWiring(wiring) {
+  return [...ALPHABET]
+    .map((letter, index) => [letter, wiring[index]])
+    .filter(([source, target]) => source < target)
+    .map((pair) => pair.join(""));
+}
+
+function wiringFromPairs(pairs) {
+  const wiring = Array(26).fill("");
+  pairs.forEach((pair) => {
+    const [first, second] = pair;
+    wiring[toIndex(first)] = second;
+    wiring[toIndex(second)] = first;
+  });
+  return wiring.join("");
+}
+
+function getReflectorWiring() {
+  return machine.reflector === "CUSTOM"
+    ? machine.customReflector.wiring
+    : REFLECTORS[machine.reflector];
+}
+
+function reflectorDisplayName() {
+  if (machine.reflector === "CUSTOM") return "Custom";
+  return machine.reflector === "B" ? "Option 1" : "Option 2";
+}
+
+function customRotorIndex(rotorName) {
+  return CUSTOM_ROTOR_IDS.indexOf(rotorName);
+}
+
+function getRotorSpec(rotorName) {
+  const customIndex = customRotorIndex(rotorName);
+  return customIndex >= 0 ? machine.customRotors[customIndex] : ROTORS[rotorName];
+}
+
+function rotorDisplayName(rotorName) {
+  const customIndex = customRotorIndex(rotorName);
+  return customIndex >= 0 ? `Custom ${POSITION_NAMES[customIndex]}` : rotorName;
+}
+
+function activeCustomIndexes() {
+  return machine.rotorOrder
+    .map((name) => customRotorIndex(name))
+    .filter((index) => index >= 0);
+}
+
+function machineIsValid() {
+  const rotorsValid = activeCustomIndexes().every(
+    (index) => machine.customRotors[index].valid,
+  );
+  const reflectorValid =
+    machine.reflector !== "CUSTOM" || machine.customReflector.valid;
+  return rotorsValid && reflectorValid;
+}
+
 function rotorTransform(rotorName, signal, position, ring, reverse = false) {
-  const wiring = ROTORS[rotorName].wiring;
+  const wiring = getRotorSpec(rotorName).wiring;
   const internalInput = (signal + position - ring + 26) % 26;
   const internalOutput = reverse
     ? wiring.indexOf(toLetter(internalInput))
@@ -55,7 +133,7 @@ function rotorTransform(rotorName, signal, position, ring, reverse = false) {
   const externalOutput = (internalOutput - position + ring + 26) % 26;
 
   return {
-    rotorName,
+    rotorName: rotorDisplayName(rotorName),
     direction: reverse ? "reverse" : "forward",
     position: toLetter(position),
     ring: toLetter(ring),
@@ -71,8 +149,8 @@ function stepRotors() {
   const before = machine.positions.map(toLetter).join("");
   const rightName = machine.rotorOrder[2];
   const middleName = machine.rotorOrder[1];
-  const rightAtNotch = toLetter(machine.positions[2]) === ROTORS[rightName].notch;
-  const middleAtNotch = toLetter(machine.positions[1]) === ROTORS[middleName].notch;
+  const rightAtNotch = getRotorSpec(rightName).notch.includes(toLetter(machine.positions[2]));
+  const middleAtNotch = getRotorSpec(middleName).notch.includes(toLetter(machine.positions[1]));
   let leftStepped = false;
   let middleStepped = false;
 
@@ -101,7 +179,7 @@ function stepRotors() {
 
 function pressKey(letter, animate = true) {
   const normalized = letter.toUpperCase();
-  if (!ALPHABET.includes(normalized)) return "";
+  if (!ALPHABET.includes(normalized) || !machineIsValid()) return "";
 
   const step = stepRotors();
   let signal = toIndex(normalized);
@@ -120,7 +198,7 @@ function pressKey(letter, animate = true) {
   }
 
   const reflectorInput = toLetter(signal);
-  signal = toIndex(REFLECTORS[machine.reflector][signal]);
+  signal = toIndex(getReflectorWiring()[signal]);
   const reflectorOutput = toLetter(signal);
 
   for (const rotorIndex of [0, 1, 2]) {
@@ -153,10 +231,14 @@ function pressKey(letter, animate = true) {
   return output;
 }
 
-function populateSelect(select, values, selected) {
-  select.innerHTML = values
-    .map((value) => `<option value="${value}"${value === selected ? " selected" : ""}>${value}</option>`)
-    .join("");
+function populateRotorSelect(select, selected, customId, customLabel) {
+  select.innerHTML = [
+    ...Object.keys(ROTORS).map(
+      (name) => `<option value="${name}">Rotor ${name}</option>`,
+    ),
+    `<option value="${customId}">${customLabel}</option>`,
+  ].join("");
+  select.value = selected;
 }
 
 function createRotorWindows() {
@@ -165,8 +247,8 @@ function createRotorWindows() {
       (name, index) => `
         <div class="rotor-unit">
           <div class="rotor-unit-header">
-            <span>${["Left", "Middle", "Right"][index]}</span>
-            <span>Rotor ${name}</span>
+            <span>${POSITION_NAMES[index]}</span>
+            <span>${customRotorIndex(name) >= 0 ? rotorDisplayName(name) : `Rotor ${name}`}</span>
           </div>
           <div class="window-control">
             <button type="button" data-position-delta="-1" data-rotor-index="${index}" aria-label="Move ${["left", "middle", "right"][index]} rotor backward">−</button>
@@ -180,6 +262,198 @@ function createRotorWindows() {
       `,
     )
     .join("");
+}
+
+function validateCustomRotor(index, wiring, notch) {
+  const cleanWiring = wiring.toUpperCase().replace(/[^A-Z]/g, "");
+  const cleanNotch = notch.toUpperCase().replace(/[^A-Z]/g, "");
+  let error = "";
+
+  if (cleanWiring.length !== 26) {
+    error = `Wiring needs 26 letters; currently ${cleanWiring.length}.`;
+  } else if (new Set(cleanWiring).size !== 26) {
+    error = "Each letter A–Z must appear exactly once.";
+  } else if (!cleanNotch.length) {
+    error = "Enter at least one turnover notch letter.";
+  } else if (new Set(cleanNotch).size !== cleanNotch.length) {
+    error = "Notch letters cannot repeat.";
+  }
+
+  machine.customRotors[index] = {
+    wiring: cleanWiring,
+    notch: cleanNotch,
+    valid: !error,
+    error,
+  };
+  return machine.customRotors[index];
+}
+
+function createCustomRotorEditor() {
+  elements.customRotorEditor.innerHTML = machine.customRotors
+    .map((rotor, index) => {
+      const active = machine.rotorOrder.includes(CUSTOM_ROTOR_IDS[index]);
+      return `
+        <article class="wiring-card${active ? "" : " inactive"}" data-custom-card="${index}">
+          <div class="wiring-card-header">
+            <span>
+              <strong>${POSITION_NAMES[index]} custom rotor</strong>
+              <small>Independent wiring</small>
+            </span>
+            <span class="custom-badge">${active ? "Installed" : "Available"}</span>
+          </div>
+          <label class="wiring-field">
+            <span>Wiring permutation</span>
+            <input
+              data-custom-wiring="${index}"
+              value="${rotor.wiring}"
+              maxlength="26"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="${POSITION_NAMES[index]} custom rotor wiring"
+              aria-invalid="${rotor.valid ? "false" : "true"}"
+            />
+          </label>
+          <label class="wiring-field">
+            <span>Turnover notch</span>
+            <input
+              data-custom-notch="${index}"
+              value="${rotor.notch}"
+              maxlength="26"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="${POSITION_NAMES[index]} custom rotor turnover notch"
+              aria-invalid="${rotor.valid ? "false" : "true"}"
+            />
+          </label>
+          <p class="wiring-help${rotor.error ? " error" : ""}" data-custom-status="${index}">
+            ${rotor.error || "Valid permutation · Ready to install"}
+          </p>
+        </article>
+      `;
+    })
+    .join("");
+  renderCustomValidity();
+}
+
+function renderCustomValidity() {
+  const invalidActive = activeCustomIndexes().filter(
+    (index) => !machine.customRotors[index].valid,
+  );
+  elements.wiringValidity.classList.toggle("invalid", invalidActive.length > 0);
+  elements.wiringValidity.textContent = invalidActive.length
+    ? `Fix ${invalidActive.length} installed custom rotor${invalidActive.length === 1 ? "" : "s"}`
+    : "All installed rotors valid";
+}
+
+function validateCustomReflector(pairs) {
+  const cleanPairs = pairs.map((pair) =>
+    pair.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2),
+  );
+  const invalidIndexes = new Set();
+  const letterOwners = new Map();
+  let hasIncompletePair = false;
+  let hasSelfPair = false;
+
+  cleanPairs.forEach((pair, index) => {
+    if (pair.length !== 2) {
+      hasIncompletePair = true;
+      invalidIndexes.add(index);
+    }
+    if (pair.length === 2 && pair[0] === pair[1]) {
+      hasSelfPair = true;
+      invalidIndexes.add(index);
+    }
+    [...pair].forEach((letter) => {
+      const owners = letterOwners.get(letter) || [];
+      owners.push(index);
+      letterOwners.set(letter, owners);
+    });
+  });
+
+  let hasDuplicates = false;
+  letterOwners.forEach((owners) => {
+    if (owners.length > 1) {
+      hasDuplicates = true;
+      owners.forEach((index) => invalidIndexes.add(index));
+    }
+  });
+
+  let error = "";
+  if (hasIncompletePair) {
+    error = "Each reflector pair needs exactly two letters.";
+  } else if (hasSelfPair) {
+    error = "A reflector cannot connect a letter to itself.";
+  } else if (hasDuplicates || letterOwners.size !== 26) {
+    error = "Use every letter A–Z exactly once across the 13 pairs.";
+  }
+
+  const valid = !error;
+  machine.customReflector = {
+    pairs: cleanPairs,
+    wiring: valid ? wiringFromPairs(cleanPairs) : "",
+    valid,
+    error,
+    invalidIndexes: [...invalidIndexes],
+  };
+  return machine.customReflector;
+}
+
+function createReflectorEditor() {
+  const isCustom = machine.reflector === "CUSTOM";
+  const pairs = isCustom
+    ? machine.customReflector.pairs
+    : pairsFromWiring(REFLECTORS[machine.reflector]);
+
+  elements.reflectorPairs.innerHTML = pairs
+    .map(
+      (pair, index) => `
+        <label class="reflector-pair">
+          <span>Pair ${String(index + 1).padStart(2, "0")}</span>
+          <input
+            data-reflector-pair="${index}"
+            value="${pair}"
+            maxlength="2"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="${isCustom ? "Custom" : reflectorDisplayName()} reflector pair ${index + 1}"
+            aria-invalid="${isCustom && machine.customReflector.invalidIndexes.includes(index)}"
+            ${isCustom ? "" : "readonly"}
+          />
+        </label>
+      `,
+    )
+    .join("");
+  renderReflectorValidity();
+}
+
+function renderReflectorValidity() {
+  const isCustom = machine.reflector === "CUSTOM";
+  elements.reflectorLabEyebrow.textContent = isCustom
+    ? "Custom component"
+    : "Preset reflector";
+  elements.reflectorLabTitle.textContent = isCustom
+    ? "Custom reflector pairboard"
+    : `${reflectorDisplayName()} reflector pairboard`;
+  elements.reflectorLabCopy.textContent = isCustom
+    ? "Connect the alphabet into 13 pairs. Each letter must appear exactly once, and a letter cannot connect to itself."
+    : `${reflectorDisplayName()} connects the alphabet into 13 fixed reciprocal pairs. Select Custom to create your own.`;
+
+  if (!isCustom) {
+    elements.reflectorValidity.classList.remove("invalid");
+    elements.reflectorValidity.textContent = `${reflectorDisplayName()} preset`;
+    elements.reflectorError.textContent = "Preset wiring is displayed read-only.";
+    elements.reflectorError.classList.remove("error");
+    return;
+  }
+
+  const reflector = machine.customReflector;
+  elements.reflectorValidity.classList.toggle("invalid", !reflector.valid);
+  elements.reflectorValidity.textContent = reflector.valid
+    ? "Valid reciprocal reflector"
+    : "Custom reflector incomplete";
+  elements.reflectorError.textContent =
+    reflector.error || "All 26 contacts are paired.";
+  elements.reflectorError.classList.toggle("error", !reflector.valid);
 }
 
 function createLetterBoard(container, isKeyboard) {
@@ -203,8 +477,11 @@ function updateRotorSelects() {
   selects.forEach((select, index) => {
     select.value = machine.rotorOrder[index];
     [...select.options].forEach((option) => {
-      option.disabled =
-        option.value !== machine.rotorOrder[index] && machine.rotorOrder.includes(option.value);
+      option.disabled = Boolean(
+        ROTORS[option.value] &&
+        option.value !== machine.rotorOrder[index] &&
+        machine.rotorOrder.includes(option.value),
+      );
     });
   });
 }
@@ -216,6 +493,9 @@ function renderMachine() {
   });
   elements.cipherText.value = machine.history;
   elements.turnoverToggle.checked = machine.turnover;
+  const valid = machineIsValid();
+  elements.encryptMessage.disabled = !valid;
+  elements.keyboard.classList.toggle("disabled", !valid);
   document.querySelectorAll("[data-reflector]").forEach((button) => {
     button.classList.toggle("active", button.dataset.reflector === machine.reflector);
   });
@@ -247,7 +527,7 @@ function renderTrace() {
     })),
     {
       letter: trace.reflectorOutput,
-      label: `UKW ${machine.reflector}`,
+      label: `Reflector ${reflectorDisplayName()}`,
       detail: `${trace.reflectorInput} ↔ ${trace.reflectorOutput}`,
       className: "reflector",
     },
@@ -324,6 +604,8 @@ function rebuildFromConfiguration({ keepPositions = false } = {}) {
   machine.history = "";
   machine.lastTrace = null;
   createRotorWindows();
+  createCustomRotorEditor();
+  createReflectorEditor();
   updateRotorSelects();
   renderMachine();
   renderTrace();
@@ -337,10 +619,18 @@ function restoreDefaults() {
     initialPositions: [...DEFAULTS.positions],
     reflector: DEFAULTS.reflector,
     turnover: DEFAULTS.turnover,
+    customRotors: DEFAULTS.customRotors.map((rotor) => ({ ...rotor })),
+    customReflector: {
+      ...DEFAULTS.customReflector,
+      pairs: [...DEFAULTS.customReflector.pairs],
+      invalidIndexes: [],
+    },
     history: "",
     lastTrace: null,
   });
   createRotorWindows();
+  createCustomRotorEditor();
+  createReflectorEditor();
   updateRotorSelects();
   renderMachine();
   renderTrace();
@@ -354,6 +644,7 @@ function bindEvents() {
   [elements.leftRotor, elements.middleRotor, elements.rightRotor].forEach((select, index) => {
     select.addEventListener("change", () => {
       machine.rotorOrder[index] = select.value;
+      if (customRotorIndex(select.value) >= 0) elements.wiringLab.open = true;
       rebuildFromConfiguration({ keepPositions: true });
     });
   });
@@ -392,7 +683,56 @@ function bindEvents() {
 
   elements.keyboard.addEventListener("click", (event) => {
     const key = event.target.closest("[data-key]");
-    if (key) pressKey(key.dataset.key);
+    if (key && machineIsValid()) pressKey(key.dataset.key);
+  });
+
+  elements.customRotorEditor.addEventListener("input", (event) => {
+    const wiringInput = event.target.closest("[data-custom-wiring]");
+    const notchInput = event.target.closest("[data-custom-notch]");
+    if (!wiringInput && !notchInput) return;
+
+    const index = Number(
+      wiringInput?.dataset.customWiring ?? notchInput?.dataset.customNotch,
+    );
+    const card = elements.customRotorEditor.querySelector(`[data-custom-card="${index}"]`);
+    const wiring = card.querySelector("[data-custom-wiring]").value;
+    const notch = card.querySelector("[data-custom-notch]").value;
+    const rotor = validateCustomRotor(index, wiring, notch);
+    card.querySelectorAll("input").forEach((input) => {
+      input.setAttribute("aria-invalid", String(!rotor.valid));
+    });
+    const status = card.querySelector("[data-custom-status]");
+    status.textContent = rotor.error || "Valid permutation · Ready to install";
+    status.classList.toggle("error", !rotor.valid);
+    machine.history = "";
+    machine.lastTrace = null;
+    renderCustomValidity();
+    renderMachine();
+    renderTrace();
+  });
+
+  elements.reflectorPairs.addEventListener("input", (event) => {
+    if (machine.reflector !== "CUSTOM") return;
+    const input = event.target.closest("[data-reflector-pair]");
+    if (!input) return;
+
+    input.value = input.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
+    const pairs = [...elements.reflectorPairs.querySelectorAll("[data-reflector-pair]")]
+      .map((pairInput) => pairInput.value);
+    const reflector = validateCustomReflector(pairs);
+    elements.reflectorPairs
+      .querySelectorAll("[data-reflector-pair]")
+      .forEach((pairInput, index) => {
+        pairInput.setAttribute(
+          "aria-invalid",
+          String(reflector.invalidIndexes.includes(index)),
+        );
+      });
+    machine.history = "";
+    machine.lastTrace = null;
+    renderReflectorValidity();
+    renderMachine();
+    renderTrace();
   });
 
   document.addEventListener("keydown", (event) => {
@@ -468,6 +808,16 @@ function init() {
     "rightRotor",
     "rotorWindows",
     "turnoverToggle",
+    "wiringLab",
+    "customRotorEditor",
+    "wiringValidity",
+    "reflectorPanel",
+    "reflectorPairs",
+    "reflectorLabEyebrow",
+    "reflectorLabTitle",
+    "reflectorLabCopy",
+    "reflectorValidity",
+    "reflectorError",
     "lampboard",
     "keyboard",
     "plainText",
@@ -487,11 +837,27 @@ function init() {
     elements[id] = document.getElementById(id);
   });
 
-  const rotorNames = Object.keys(ROTORS);
-  populateSelect(elements.leftRotor, rotorNames, machine.rotorOrder[0]);
-  populateSelect(elements.middleRotor, rotorNames, machine.rotorOrder[1]);
-  populateSelect(elements.rightRotor, rotorNames, machine.rotorOrder[2]);
+  populateRotorSelect(
+    elements.leftRotor,
+    machine.rotorOrder[0],
+    CUSTOM_ROTOR_IDS[0],
+    "Custom wiring…",
+  );
+  populateRotorSelect(
+    elements.middleRotor,
+    machine.rotorOrder[1],
+    CUSTOM_ROTOR_IDS[1],
+    "Custom wiring…",
+  );
+  populateRotorSelect(
+    elements.rightRotor,
+    machine.rotorOrder[2],
+    CUSTOM_ROTOR_IDS[2],
+    "Custom wiring…",
+  );
   createRotorWindows();
+  createCustomRotorEditor();
+  createReflectorEditor();
   createLetterBoard(elements.lampboard, false);
   createLetterBoard(elements.keyboard, true);
   updateRotorSelects();

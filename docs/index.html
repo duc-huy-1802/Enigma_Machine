@@ -74,8 +74,9 @@
           <fieldset class="compact-config">
             <legend>Reflector</legend>
             <div class="segmented" role="group" aria-label="Reflector">
-              <button class="segment active" data-reflector="B" type="button">UKW B</button>
-              <button class="segment" data-reflector="C" type="button">UKW C</button>
+              <button class="segment active" data-reflector="B" type="button">Option 1</button>
+              <button class="segment" data-reflector="C" type="button">Option 2</button>
+              <button class="segment" data-reflector="CUSTOM" type="button">Custom</button>
             </div>
           </fieldset>
 
@@ -91,6 +92,43 @@
             </label>
           </fieldset>
         </div>
+
+        <section class="reflector-lab" id="reflectorPanel" aria-labelledby="reflectorLabTitle">
+          <div class="reflector-lab-heading">
+            <div>
+              <p class="eyebrow" id="reflectorLabEyebrow">Preset reflector</p>
+              <h3 id="reflectorLabTitle">Option 1 reflector pairboard</h3>
+            </div>
+            <span id="reflectorValidity" class="wiring-validity">Option 1 preset</span>
+          </div>
+          <p class="reflector-lab-copy" id="reflectorLabCopy">
+            The selected historical reflector connects the alphabet into 13
+            fixed reciprocal pairs.
+          </p>
+          <div class="reflector-pairs" id="reflectorPairs"></div>
+          <p class="reflector-error" id="reflectorError" aria-live="polite">
+            Preset wiring is displayed read-only.
+          </p>
+        </section>
+
+        <details class="wiring-lab" id="wiringLab">
+          <summary>
+            <span>
+              <strong>Rotor wiring lab</strong>
+              <small>Build up to three independent custom rotors</small>
+            </span>
+            <span class="summary-action">Open lab <span aria-hidden="true">↓</span></span>
+          </summary>
+          <div class="wiring-intro">
+            <p>
+              Choose <strong>Custom wiring</strong> in any rotor position, then
+              enter every letter A–Z exactly once. The first character maps A,
+              the second maps B, and so on.
+            </p>
+            <span id="wiringValidity" class="wiring-validity">All installed rotors valid</span>
+          </div>
+          <div class="wiring-grid" id="customRotorEditor"></div>
+        </details>
       </section>
 
       <section class="machine" aria-labelledby="machine-title">
@@ -218,7 +256,7 @@
 
     <footer>
       <span>ENIGMA I / EDUCATIONAL SIMULATOR</span>
-      <span>Rotors I–V · Reflectors B &amp; C · No plugboard</span>
+      <span>Custom rotors &amp; reflector · No plugboard</span>
     </footer>
   </body>
 </html>
