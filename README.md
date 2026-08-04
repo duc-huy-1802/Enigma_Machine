@@ -26,6 +26,15 @@ of the latest keypress. Only ASCII letters A-Z enter the machine; spaces,
 punctuation, numbers, accents, emoji, and other characters pass through
 unchanged without advancing the rotors.
 
+The interface distinguishes editable custom components from the active machine,
+provides an explicit install action for each custom rotor, marks the leftmost
+turnover notch as not applicable, and reports cumulative letter and rotor-step
+counts from the initial setting.
+
+The operating panel labels the historical motion explicitly: the right rotor
+is the fast rotor and steps before every letter, the middle rotor follows the
+right turnover notch and can double-step, and the left rotor is the slow rotor.
+
 To publish it with GitHub Pages:
 
 1. Open the repository's **Settings → Pages**.

@@ -9,8 +9,8 @@
     />
     <meta name="theme-color" content="#171916" />
     <title>Enigma I — Interactive Cipher Machine</title>
-    <link rel="stylesheet" href="styles.css?v=20260729-1" />
-    <script src="app.js?v=20260729-4" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20260803-3" />
+    <script src="app.js?v=20260803-2" defer></script>
   </head>
   <body>
     <header class="site-header">
@@ -55,17 +55,17 @@
             <legend>Rotor order <span>Left → Right</span></legend>
             <div class="rotor-selects">
               <label>
-                <span>I · Left</span>
+                <span>Left position</span>
                 <select id="leftRotor" aria-label="Left rotor"></select>
               </label>
               <span class="direction-arrow" aria-hidden="true">→</span>
               <label>
-                <span>II · Middle</span>
+                <span>Middle position</span>
                 <select id="middleRotor" aria-label="Middle rotor"></select>
               </label>
               <span class="direction-arrow" aria-hidden="true">→</span>
               <label>
-                <span>III · Right</span>
+                <span>Right position</span>
                 <select id="rightRotor" aria-label="Right rotor"></select>
               </label>
             </div>
@@ -92,6 +92,17 @@
             </label>
           </fieldset>
         </div>
+
+        <section class="active-setup" aria-labelledby="active-setup-title">
+          <div class="active-setup-heading">
+            <div>
+              <p class="eyebrow">Configuration in use</p>
+              <h3 id="active-setup-title">Active machine</h3>
+            </div>
+            <span class="active-indicator"><span aria-hidden="true"></span> Live settings</span>
+          </div>
+          <div class="active-config-grid" id="activeConfiguration" aria-live="polite"></div>
+        </section>
 
         <section class="reflector-lab" id="reflectorPanel" aria-labelledby="reflectorLabTitle">
           <div class="reflector-lab-heading">
@@ -120,11 +131,16 @@
             <span class="summary-action">Open lab <span aria-hidden="true">↓</span></span>
           </summary>
           <div class="wiring-intro">
-            <p>
-              Choose <strong>Custom wiring</strong> in any rotor position, then
-              enter every letter A–Z exactly once. The first character maps A,
-              the second maps B, and so on.
-            </p>
+            <div class="wiring-guidance">
+              <p>
+                Enter every letter A–Z exactly once. The first character maps A,
+                the second maps B, and so on. Then choose <strong>Use in this position</strong>.
+              </p>
+              <p class="circuit-note">
+                <strong>Important:</strong> wiring describes one rotor, not the final ciphertext.
+                The machine steps before each letter, then uses all rotors and the reflector.
+              </p>
+            </div>
             <span id="wiringValidity" class="wiring-validity">All installed rotors valid</span>
           </div>
           <div class="wiring-grid" id="customRotorEditor"></div>
@@ -138,7 +154,7 @@
             <h2 id="machine-title">The machine</h2>
           </div>
           <div class="machine-actions">
-            <button class="text-button" id="resetMachine" type="button">Reset positions</button>
+            <button class="text-button" id="resetMachine" type="button">Reset run</button>
             <button class="text-button danger" id="clearMachine" type="button">Clear session</button>
           </div>
         </div>
@@ -147,7 +163,12 @@
           <div class="rotor-bank" aria-label="Rotor windows and settings">
             <div class="bank-label">
               <span>Walzenlage</span>
-              <small>Rotor windows</small>
+              <small>Rotor windows · left to right</small>
+            </div>
+            <div class="stepping-rule">
+              <span>Historical stepping order</span>
+              <strong>Right <em>fast</em> → Middle <em>turnover</em> → Left <em>slow</em></strong>
+              <small>The right rotor advances before every processed letter. The middle advances only when turnover is triggered.</small>
             </div>
             <div class="rotor-windows" id="rotorWindows"></div>
             <div class="bank-legend">
@@ -155,6 +176,17 @@
               <span class="signal-direction">Signal enters here ←</span>
             </div>
           </div>
+
+          <section class="session-stats" aria-labelledby="session-stats-title">
+            <div class="session-stats-heading">
+              <div>
+                <span class="deck-kicker">Movement report</span>
+                <h3 id="session-stats-title">Since the initial setting</h3>
+              </div>
+              <p id="sessionSummary">0 letters processed · Initial AAA · Current AAA</p>
+            </div>
+            <div class="movement-stats" id="movementStats" aria-live="polite"></div>
+          </section>
 
           <div class="message-panel">
             <div class="operation-mode">
@@ -226,7 +258,7 @@
         <div class="trace-card" id="traceCard">
           <div class="empty-trace">
             <span class="empty-trace-icon">↯</span>
-            <p>The electrical journey will appear here.</p>
+            <p>The machine steps before the first letter; its full electrical journey will appear here.</p>
           </div>
         </div>
       </section>
